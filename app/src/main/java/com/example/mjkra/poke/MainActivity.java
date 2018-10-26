@@ -1,15 +1,19 @@
 package com.example.mjkra.poke;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private static final String CHANNEL_ID = "default";
     public static TextView date;
     public static TextView time;
+    public Calendar cal = Calendar.getInstance();
+    //public int year, month, day, hour, minute;
 
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -52,6 +58,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         String currentDate = java.text.DateFormat.getDateInstance().format(c.getTime());
         date = findViewById(R.id.date);
         date.setText(currentDate);
+
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month);
+        cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        //this.year = year;
+        //this.month = month;
+        //day = dayOfMonth;
     }
 
     @Override
@@ -63,6 +76,25 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         time = findViewById(R.id.time);
         time.setText(sdf.format(date));
+
+        cal.setTimeInMillis(System.currentTimeMillis());
+        cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        cal.set(Calendar.MINUTE, minute);
+        cal.set(Calendar.SECOND, 0);
+        //hour = hourOfDay;
+        //this.minute = minute;`
+    }
+
+    public void scheduleNotification(Notification notification, long triggerTime){
+
+        Intent notificationIntent = new Intent(this, NotifcationPublisher.class);
+        notificationIntent.putExtra(NotifcationPublisher.NOTIFiCATION_ID, 1);
+        notificationIntent.putExtra(NotifcationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //long futureInMillis = SystemClock.elapsedRealtime()+delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
     }
 
     @Override
@@ -78,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
+
                 EditText inputNum1 = (EditText) findViewById(R.id.inputNum1);
                 String str = inputNum1.getText().toString();
                 //Toast.makeText(getBaseContext(), str, Toast.LENGTH_SHORT).show();
@@ -89,10 +122,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0]);
 
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getBaseContext());
-
-                // notificationId is a unique int for each notification that you must define
-                notificationManager.notify(1, mBuilder.build());
+                scheduleNotification(mBuilder.build(), cal.getTimeInMillis());
 
             }
         });
