@@ -21,6 +21,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -32,7 +33,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     public static TextView date;
     public static TextView time;
     public Calendar cal = Calendar.getInstance();
-    //public int year, month, day, hour, minute;
 
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -51,20 +51,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.YEAR, year);
-        c.set(Calendar.MONTH, month);
-        c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        String currentDate = java.text.DateFormat.getDateInstance().format(c.getTime());
-        date = findViewById(R.id.date);
-        date.setText(currentDate);
-
         cal.set(Calendar.YEAR, year);
         cal.set(Calendar.MONTH, month);
         cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        //this.year = year;
-        //this.month = month;
-        //day = dayOfMonth;
+        String currentDate = java.text.DateFormat.getDateInstance().format(cal.getTime());
+        date = findViewById(R.id.date);
+        date.setText(currentDate);
     }
 
     @Override
@@ -77,24 +69,24 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         time = findViewById(R.id.time);
         time.setText(sdf.format(date));
 
-        cal.setTimeInMillis(System.currentTimeMillis());
         cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
         cal.set(Calendar.MINUTE, minute);
         cal.set(Calendar.SECOND, 0);
-        //hour = hourOfDay;
-        //this.minute = minute;`
     }
 
-    public void scheduleNotification(Notification notification, long triggerTime){
+    public void scheduleNotification(Notification notification, long triggerTime, String str){
 
         Intent notificationIntent = new Intent(this, NotifcationPublisher.class);
         notificationIntent.putExtra(NotifcationPublisher.NOTIFiCATION_ID, 1);
         notificationIntent.putExtra(NotifcationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int)System.currentTimeMillis(), notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //long futureInMillis = SystemClock.elapsedRealtime()+delay;
         AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+
+        NotificationItem myNotification = new NotificationItem(str, cal.getTime(), pendingIntent, alarmManager);
+        NotificationList.mDataset.add(myNotification);
     }
 
     @Override
@@ -103,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         setContentView(R.layout.activity_main);
         createNotificationChannel();
 
+        Button listButton = (Button) findViewById(R.id.listButton);
         Button btn = (Button) findViewById(R.id.btn);
         date = findViewById(R.id.date);
         time = findViewById(R.id.time);
@@ -122,7 +115,11 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0]);
 
-                scheduleNotification(mBuilder.build(), cal.getTimeInMillis());
+                scheduleNotification(mBuilder.build(), cal.getTimeInMillis(), str);
+
+
+                DateFormat sdf = new SimpleDateFormat("h:mm a");
+                Toast.makeText(getBaseContext(), "Notification set for: "+ (cal.get(Calendar.MONTH)+1) +"/"+ cal.get(Calendar.DAY_OF_MONTH) +"/"+ cal.get(Calendar.YEAR)+" at "+sdf.format(cal.getTime()), Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -134,6 +131,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 newFragment.show(getSupportFragmentManager(), "datePicker");
 
 
+            }
+        });
+        listButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, NotificationList.class));
             }
         });
 
@@ -148,4 +151,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
 
     }
+    /*public void configureListButton(){
+        Button listButton = (Button) findViewById(R.id.listButton);
+        listButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, NotificationList.class));
+            }
+        });
+    }*/
 }
