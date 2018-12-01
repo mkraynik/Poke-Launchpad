@@ -16,7 +16,9 @@ public class NotifcationPublisher extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        
+
+        NotificationList.mDataset.remove(0);
+
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         Notification notification = intent.getParcelableExtra((NOTIFICATION));

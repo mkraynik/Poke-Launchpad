@@ -29,6 +29,26 @@ public class NotificationList extends AppCompatActivity {
                 finish();
             }
         });
+        /*
+        View myView = findViewById(R.id.listView);
+        myView.setOnTouchListener(new OnSwipeTouchListener(NotificationList.this) {
+            public void onSwipeTop() {
+                //Toast.makeText(MainActivity.this, "top", Toast.LENGTH_SHORT).show();
+            }
+
+            public void onSwipeRight() {
+                //Toast.makeText(MainActivity.this, "right", Toast.LENGTH_SHORT).show();
+            }
+            public void onSwipeLeft() {
+                //Toast.makeText(MainActivity.this, "left", Toast.LENGTH_SHORT).show();
+            }
+            public void onSwipeBottom() {
+                //Toast.makeText(MainActivity.this, "bottom", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+        });*/
+
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView

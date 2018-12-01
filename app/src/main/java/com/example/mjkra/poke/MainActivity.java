@@ -26,6 +26,7 @@ import android.widget.Toast;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
@@ -87,6 +88,17 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
         NotificationItem myNotification = new NotificationItem(str, cal.getTime(), pendingIntent, alarmManager);
         NotificationList.mDataset.add(myNotification);
+        NotificationList.mDataset.sort(new Comparator<NotificationItem>() {
+            @Override
+            public int compare(NotificationItem o1, NotificationItem o2) {
+                if(o1.getCal().getTimeInMillis()==o2.getCal().getTimeInMillis())
+                    return 0;
+                else if(o1.getCal().getTimeInMillis()<o2.getCal().getTimeInMillis())
+                    return-1;
+                else
+                    return 1;
+            }
+        });
     }
 
     @Override
@@ -95,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         setContentView(R.layout.activity_main);
         createNotificationChannel();
 
-        Button listButton = (Button) findViewById(R.id.listButton);
         Button btn = (Button) findViewById(R.id.btn);
         date = findViewById(R.id.date);
         time = findViewById(R.id.time);
@@ -121,6 +132,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 DateFormat sdf = new SimpleDateFormat("h:mm a");
                 Toast.makeText(getBaseContext(), "Notification set for: "+ (cal.get(Calendar.MONTH)+1) +"/"+ cal.get(Calendar.DAY_OF_MONTH) +"/"+ cal.get(Calendar.YEAR)+" at "+sdf.format(cal.getTime()), Toast.LENGTH_SHORT).show();
 
+                time.setText("Select Time");
+                date.setText("Select Date");
+                inputNum1.setText("");
             }
         });
 
@@ -133,11 +147,24 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
             }
         });
-        listButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, NotificationList.class));
-            }
+
+        View myView = findViewById(R.id.my_view);
+        myView.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
+         public void onSwipeTop() {
+            //Toast.makeText(MainActivity.this, "top", Toast.LENGTH_SHORT).show();
+             startActivity(new Intent(MainActivity.this, NotificationList.class));
+         }
+
+        public void onSwipeRight() {
+            //Toast.makeText(MainActivity.this, "right", Toast.LENGTH_SHORT).show();
+        }
+        public void onSwipeLeft() {
+            //Toast.makeText(MainActivity.this, "left", Toast.LENGTH_SHORT).show();
+        }
+        public void onSwipeBottom() {
+            //Toast.makeText(MainActivity.this, "bottom", Toast.LENGTH_SHORT).show();
+        }
+
         });
 
 
